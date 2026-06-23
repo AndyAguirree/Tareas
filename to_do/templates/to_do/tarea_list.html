@@ -1,0 +1,94 @@
+{% extends 'to_do/base.html' %}
+
+{% block title %}Listado de Tareas{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h1 class="h3">Tareas</h1>
+
+  {% if user.is_authenticated %}
+    <a class="btn btn-primary" href="{% url 'to_do:tarea_create' %}">+ Nueva tarea</a>
+  {% endif %}
+</div>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-4">
+    <input class="form-control" name="q" placeholder="Buscar" value="{{ q }}">
+  </div>
+  <div class="col-md-3">
+    <select class="form-select" name="prioridad" onchange="this.form.submit()">
+      <option value="" {% if not prioridad %}selected{% endif %}>Todas prioridades</option>
+      {% for p in prioridades %}
+        <option value="{{ p.id }}" {% if prioridad and prioridad|stringformat:"s" == p.id|stringformat:"s" %}selected{% endif %}>{{ p.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-outline-secondary w-100" type="submit">Filtrar</button>
+  </div>
+  <div class="col-md-3 text-end">
+    <a class="btn btn-outline-dark" href="{% url 'to_do:tarea_list' %}">Limpiar</a>
+  </div>
+</form>
+
+<div class="list-group">
+  {% for tarea in page_obj.object_list %}
+    <div class="list-group-item">
+      <div class="d-flex justify-content-between align-items-start gap-3">
+        <div>
+          <h5 class="mb-1">{{ tarea.titulo }}</h5>
+          <div class="text-muted small">Prioridad: <strong>{{ tarea.prioridad.nombre }}</strong></div>
+          {% if tarea.completada %}
+            <span class="badge text-bg-success mt-2">Completada</span>
+          {% else %}
+            <span class="badge text-bg-warning mt-2">Pendiente</span>
+          {% endif %}
+
+          {% if tarea.etiquetas.all %}
+            <div class="mt-2">
+              {% for e in tarea.etiquetas.all %}
+                <span class="badge text-bg-info">{{ e.nombre }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <p class="mb-0 mt-2">{{ tarea.descripcion|truncatechars:220 }}</p>
+        </div>
+
+        <div class="text-end">
+          {% if user.is_authenticated %}
+            <a class="btn btn-sm btn-outline-primary mb-2" href="{% url 'to_do:tarea_edit' tarea.id %}">Editar</a>
+          {% endif %}
+
+          {% if user.is_authenticated and user.is_staff %}
+            <a class="btn btn-sm btn-outline-danger" href="{% url 'to_do:tarea_delete' tarea.id %}">Eliminar</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="list-group-item text-center text-muted">No hay tareas</div>
+  {% endfor %}
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="mt-3">
+  <ul class="pagination justify-content-center">
+    {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&prioridad={{ prioridad }}">Anterior</a></li>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+      <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+        <a class="page-link" href="?page={{ num }}&q={{ q }}&prioridad={{ prioridad }}">{{ num }}</a>
+      </li>
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&prioridad={{ prioridad }}">Siguiente</a></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
