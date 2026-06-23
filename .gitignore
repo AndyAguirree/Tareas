@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual env
+.venv/
+entorno/
+venv/
+
+# Django
+*.log
+local_settings.py
+
+# Environments
+.env
+
+# Media (if you add it)
+media/
+
